@@ -16,12 +16,13 @@ android {
     defaultConfig {
         applicationId = "kr.interpass.private.appstore"
         minSdk = 19
-        targetSdk = 31
+        targetSdk = 34
         versionCode = versionMajor * 10000 + versionMinor * 1000 + versionPatch * 100 + versionBuild
         versionName = "$versionMajor.$versionMinor.$versionPatch"
         multiDexEnabled = true
     }
     buildFeatures {
+        buildConfig = true
         viewBinding = true
     }
     buildTypes {
@@ -36,7 +37,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = JavaVersion.VERSION_11.toString()
     }
 }
 
@@ -49,10 +50,10 @@ dependencies {
     implementation(libs.androidx.recyclerview)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.constraintlayout)
+    implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.ui.auth)
     implementation(libs.firebase.ui.database)
     implementation(libs.firebase.ui.storage)
-    implementation(libs.firebase.core)
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.auth)
     implementation(libs.firebase.database)
