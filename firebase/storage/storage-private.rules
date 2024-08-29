@@ -7,7 +7,7 @@ service firebase.storage {
           allow read: if  // User domain
                           request.auth.token.email.matches('.*@domain\\.com$') && request.auth.token.email_verified;
           allow write: if // Admin uids
-                          request.auth.uid in [ ]
+                          request.auth.uid in [ "uHmaggLvJ6RA1BNnP8eb6kAVcbZ2", "TPsn6NXJ7JO3t6AQOKqCHvTK4qX2" ]
                           &&
                             (
                               // DELETE
@@ -22,7 +22,7 @@ service firebase.storage {
             allow read: if  // User domain
                             request.auth.token.email.matches('.*@domain\\.com$') && request.auth.token.email_verified;
             allow write: if // Admin uids
-                            request.auth.uid in [ ]
+                            request.auth.uid in [ "uHmaggLvJ6RA1BNnP8eb6kAVcbZ2", "TPsn6NXJ7JO3t6AQOKqCHvTK4qX2" ]
                             &&
                               (
                                 // DELETE

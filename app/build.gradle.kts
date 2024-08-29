@@ -11,10 +11,10 @@ val versionPatch = 0
 val versionBuild = 0
 
 android {
-    namespace = "fr.smarquis.appstore"
+    namespace = "kr.interpass.private.appstore"
     compileSdk = 33
     defaultConfig {
-        applicationId = "fr.smarquis.appstore"
+        applicationId = "kr.interpass.private.appstore"
         minSdk = 19
         targetSdk = 31
         versionCode = versionMajor * 10000 + versionMinor * 1000 + versionPatch * 100 + versionBuild

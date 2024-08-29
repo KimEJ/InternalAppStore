@@ -20,6 +20,32 @@ exports.notifyNewApplications = functions.database
     const applicationUid = context.params.applicationUid;
     console.log("New application detected!", applicationUid, application);
 
+    // insert new condition into remote config
+    
+    const remoteConfig = admin.remoteConfig();
+    remoteConfig.getTemplate()
+      .then(template => {
+        template.conditions.push({
+          name: applicationUid,
+          expression: `app.id == '${application.appId}'`,
+          tagColor: "BROWN"
+        });
+        template.parameters['applicationId'].conditionalValues[applicationUid] = {
+          value: applicationUid
+        };
+
+        return remoteConfig.publishTemplate(template);
+      })
+      .then(response => {
+        console.log("Remote config updated");
+        return Promise.resolve(response);
+      })
+      .catch(error => {
+        console.log("Error updating remote config:", error);
+        return Promise.reject(error);
+      });
+    
+    // send notification
     if (application.silent === true) {
       console.log("Silent application, don't send notifications.");
       return Promise.resolve();
@@ -35,7 +61,7 @@ exports.notifyNewApplications = functions.database
         type: fcmTypeNewApplication,
         applicationKey: String(applicationUid),
         applicationName: String(application.name),
-        applicationPackageName: String(application.packageName)
+        applicationAppId: String(application.appId)
       }
     };
 
@@ -67,6 +93,31 @@ exports.notifyNewVersions = functions.database
     const applicationUid = context.params.applicationUid;
     const versionUid = context.params.versionUid;
     console.log("New version detected!", applicationUid, versionUid, version);
+
+    // update version into remote config
+    
+    const remoteConfig = admin.remoteConfig();
+    remoteConfig.getTemplate()
+      .then(template => {
+        template.parameters['version'].conditionalValues[applicationUid] = {
+          value: version.name
+        };
+        template.parameters['versionId'].conditionalValues[applicationUid] = {
+          value: versionUid
+        };
+        return remoteConfig.publishTemplate(template);
+      })
+      .then(response => {
+        console.log("Remote config updated");
+        return Promise.resolve(response);
+      })
+      .catch(error => {
+        console.log("Error updating remote config:", error);
+        return Promise.reject(error);
+      });
+    
+    
+    // send notification
     if (version.silent === true) {
       console.log("Silent version, don't send notifications.");
       return Promise.resolve();
@@ -90,7 +141,7 @@ exports.notifyNewVersions = functions.database
             type: fcmTypeNewVersion,
             applicationKey: String(applicationUid),
             applicationName: String(application.name),
-            applicationPackageName: String(application.packageName),
+            applicationAppId: String(application.appId),
             versionKey: String(versionUid),
             versionName: String(version.name)
           }
@@ -129,6 +180,49 @@ exports.analyticsVersionDeleted = functions.database.ref("/store/versions/{appli
   const downloads = admin.database().ref(`/analytics/downloads/${context.params.application_id}/${context.params.version_id}`);
   const installs = admin.database().ref(`/analytics/installs/${context.params.application_id}/${context.params.version_id}`);
   console.log("Cleaning up analytics:", downloads.path.toString(), installs.path.toString());
+
+  // get verge of version_id
+  const versions = admin.database().ref(`/store/versions/${context.params.application_id}`);
+  versions.once("value")
+    .then(snapshot => {
+      const versions = snapshot.val();
+      if (versions) {
+        const versionIds = Object.keys(versions);
+        if (versionIds.length > 0) {
+          const versionId = versionIds[versionIds.length - 1];
+          console.log("Updating versionId:", versionId);
+
+          // update versionId into remote config
+          
+	        const remoteConfig = admin.remoteConfig();
+          remoteConfig.getTemplate()
+            .then(template => {
+              template.parameters['version'].conditionalValues[context.params.application_id] = {
+                value: version.name
+              };
+              template.parameters['versionId'].conditionalValues[context.params.application_id] = {
+                value: versionId
+              };
+              return remoteConfig.publishTemplate(template);
+            })
+            .then(response => {
+              console.log("Remote config updated");
+              return Promise.resolve(response);
+            })
+            .catch(error => {
+              console.log("Error updating remote config:", error);
+              return Promise.reject(error);
+            });
+	        
+        }
+      }
+      return Promise.resolve();
+    })
+    .catch(error => {
+      console.log("Error getting versions:", error);
+      return Promise.reject(error);
+    });
+
   return Promise.all([downloads.remove(), installs.remove()]);
 });
 

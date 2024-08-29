@@ -6,7 +6,7 @@ service firebase.storage {
         match /image {
           allow read;
           allow write: if // Admin uids
-                          request.auth.uid in [  ]
+                          request.auth.uid in [ "uHmaggLvJ6RA1BNnP8eb6kAVcbZ2", "TPsn6NXJ7JO3t6AQOKqCHvTK4qX2" ]
                           &&
                             (
                               // DELETE
@@ -20,7 +20,7 @@ service firebase.storage {
           match /{versionId} {
             allow read;
             allow write: if // Admin uids
-                            request.auth.uid in [  ]
+                            request.auth.uid in [ "uHmaggLvJ6RA1BNnP8eb6kAVcbZ2", "TPsn6NXJ7JO3t6AQOKqCHvTK4qX2" ]
                             &&
                               (
                                 // DELETE

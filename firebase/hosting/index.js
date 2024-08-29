@@ -9,7 +9,7 @@ AppStore.CONFIG = {
     signInFlow: "popup",
     credentialHelper: firebaseui.auth.CredentialHelper.NONE,
     signInOptions: [
-      firebase.auth.GoogleAuthProvider.PROVIDER_ID,
+      // firebase.auth.GoogleAuthProvider.PROVIDER_ID,
       {
         provider: firebase.auth.EmailAuthProvider.PROVIDER_ID,
         requireDisplayName: false
@@ -23,7 +23,7 @@ AppStore.CONFIG = {
 };
 
 AppStore.CONSTANTS = {
-  packageNameRegex: /^([A-Za-z]{1}[A-Za-z\d_]*\.)*[A-Za-z][A-Za-z\d_]*$/,
+  appIdappIdRegex: /^1:1082398656566:android:[a-z0-9]{22}$/,
   shrug: "¯\\_(ツ)_/¯"
 };
 
@@ -115,7 +115,7 @@ AppStore.prototype.updateInternalData = function(snapshot) {
         }
       }
     } else {
-      this.uiTriggerAlert("alert-secondary", `<b>${AppStore.CONSTANTS.shrug}</b><br>The App Store is currently empty…`);
+      this.uiTriggerAlert("alert-secondary", `<b>${AppStore.CONSTANTS.shrug}</b><br>앱스토어는 현재 비어있습니다…`);
     }
   }
 };
@@ -307,7 +307,7 @@ AppStore.prototype.uiInitApplications = function() {
 };
 
 AppStore.prototype.uiAppendApplication = function(key, app) {
-  if (app.name == undefined || app.packageName == undefined) {
+  if (app.name == undefined || app.appId == undefined) {
     console.error("Ignored app:", key, app);
     return;
   }
@@ -569,14 +569,12 @@ AppStore.prototype.uiUpdateApplicationDetails = function(details, key, app) {
   }
   details.querySelector("[data-app-name]").textContent = app.name;
   details.querySelector("[data-app-description]").innerHTML = app.description ? HtmlSanitizer.sanitize(app.description) : "";
-  const packageName = details.querySelector("[data-app-package-name]");
-  if (packageName.childElementCount == 0) {
+  const appId = details.querySelector("[data-app-id]");
+  if (appId.childElementCount == 0) {
     const packageLink = Ui.inflate(this.templates.applicationLinkOutline).firstElementChild;
-    packageName.append(packageLink);
+    appId.append(packageLink);
   }
-  packageName.querySelector("[data-app-link-label]").textContent = app.packageName;
-  packageName.querySelector("[data-app-link]").setAttribute("href", `https://play.google.com/store/apps/details?id=${app.packageName}`);
-
+  appId.querySelector("[data-app-link-label]").textContent = app.appId;
   const links = details.querySelector("[data-app-links]");
   Ui.empty(links);
   for (let link of [app.link_1, app.link_2, app.link_3, app.link_4, app.link_5]) {
@@ -649,7 +647,7 @@ AppStore.prototype.uiShowApplicationModal = function(key) {
     root: root,
     dialog: root.querySelector(".modal-dialog"),
     name: root.querySelector("[data-app-name]"),
-    packageName: root.querySelector("[data-app-package-name]"),
+    appId: root.querySelector("[data-app-id]"),
     descriptionRoot: root.querySelector("[data-app-description-root]"),
     description: root.querySelector("[data-app-description]"),
     linksRoot: root.querySelector("[data-app-links-root]"),
@@ -678,13 +676,13 @@ AppStore.prototype.uiShowApplicationModal = function(key) {
   for (let link of [modal.link1uri, modal.link2uri, modal.link3uri, modal.link4uri, modal.link5uri]) {
     link.addEventListener("input", event => Utils.validateUriInput(event.target, true));
   }
-  modal.packageName.addEventListener("input", event =>
-    event.target.setCustomValidity(event.target.value.match(AppStore.CONSTANTS.packageNameRegex) ? "" : "error")
+  modal.appId.addEventListener("input", event =>
+    event.target.setCustomValidity(event.target.value.match(AppStore.CONSTANTS.appIdRegex) ? "" : "error")
   );
   const app = this.applications.get(key);
   if (app) {
     modal.name.value = app.name;
-    modal.packageName.value = app.packageName;
+    modal.appId.value = app.appId;
     modal.description.innerHTML = app.description ? HtmlSanitizer.sanitize(app.description) : "";
     modal.link1name.value = app.link_1 ? app.link_1.name : null;
     modal.link1uri.value = app.link_1 ? app.link_1.uri : null;
@@ -703,7 +701,7 @@ AppStore.prototype.uiShowApplicationModal = function(key) {
     modal.update.addEventListener("click", event => this.uiApplicationModalCommit(modal, key, app));
   } else {
     modal.dialog.classList.add("modal-sm");
-    modal.descriptionRoot.remove();
+    // modal.descriptionRoot.remove();
     modal.linksRoot.remove();
     modal.delete.remove();
     modal.update.remove();
@@ -761,7 +759,8 @@ AppStore.prototype.uiApplicationModalCommit = function(modal, key, app) {
 AppStore.prototype.uiExtractDataFromApplicationModal = function(modal, key) {
   const data = {};
   data.name = modal.name.value;
-  data.packageName = modal.packageName.value;
+  data.appId = modal.appId.value;
+  data.description = modal.description.value;
   const files = modal.imageInput.files;
   if (files && files.length > 0) {
     data.image = files[0];
@@ -811,9 +810,9 @@ AppStore.prototype.uiValidateApplicationModal = function(modal, key, app) {
     modal.name.focus();
     return false;
   }
-  if (!data.packageName || !data.packageName.match(AppStore.CONSTANTS.packageNameRegex)) {
-    console.error("Invalid packageName");
-    modal.packageName.focus();
+  if (!data.appId || !data.appId.match(AppStore.CONSTANTS.appIdRegex)) {
+    console.error("Invalid appId");
+    modal.appId.focus();
     return false;
   }
   if (!app && !data.image) {
@@ -1040,11 +1039,6 @@ AppStore.prototype.uiVersionModalValidate = function(modal, version, data) {
     modal.name.focus();
     return false;
   }
-  if (!data.timestamp) {
-    console.error("Timestamp is required");
-    modal.packageName.focus();
-    return false;
-  }
 
   const apkAsFile = Ui.isHidden(modal.apkUrl);
   if (apkAsFile) {
@@ -1074,7 +1068,7 @@ AppStore.prototype.uiVersionModalValidate = function(modal, version, data) {
 AppStore.prototype.uiOnApplicationAdded = function(snapshot) {
   // Show alert only if it's a new/unknown application
   if (!this.applications.get(snapshot.key)) {
-    this.uiTriggerAlert("alert-success", `Application <b>${snapshot.val().name}</b> created`);
+    this.uiTriggerAlert("alert-success", `앱 <b>${snapshot.val().name}</b> 이 생성되었습니다.`);
   }
 };
 
@@ -1111,7 +1105,7 @@ AppStore.prototype.uiOnApplicationRemoved = function(snapshot) {
   }
 
   if (this.applications.get(snapshot.key)) {
-    this.uiTriggerAlert("alert-danger", `Application <b>${snapshot.val().name}</b> removed`);
+    this.uiTriggerAlert("alert-danger", `앱 <b>${snapshot.val().name}</b> 이 삭제되었습니다.`);
   }
 };
 
@@ -1119,7 +1113,7 @@ AppStore.prototype.uiOnVersionAdded = function(applicationKey, snapshot) {
   const application = this.applications.get(applicationKey);
   const version = this.versions.get(snapshot.key);
   if (!version && application) {
-    this.uiTriggerAlert("alert-success", `<b>${application.name}</b><br>Version <b>${snapshot.val().name}</b> created`);
+    this.uiTriggerAlert("alert-success", `<b>${application.name}</b><br>버전 <b>${snapshot.val().name}</b> 이 생성되었습니다.`);
   }
 };
 
@@ -1142,15 +1136,15 @@ AppStore.prototype.uiOnVersionRemoved = function(applicationKey, snapshot) {
   const application = this.applications.get(applicationKey);
   const version = this.versions.get(snapshot.key);
   if (version && application) {
-    this.uiTriggerAlert("alert-danger", `<b>${application.name}</b><br>Version <b>${snapshot.val().name}</b> removed`);
+    this.uiTriggerAlert("alert-danger", `<b>${application.name}</b><br>버전 <b>${snapshot.val().name}</b> 이 삭제되었습니다.`);
   }
 };
 
 AppStore.prototype.dataPushNewApplication = function(app) {
   const data = {
     name: app.name,
-    packageName: app.packageName,
-    description: ""
+    appId: app.appId,
+    description: HtmlSanitizer.sanitize(app.description ?? ""),
   };
   if (app.silent === true) {
     data.silent = true;
@@ -1180,7 +1174,7 @@ AppStore.prototype.dataUpdateApplicationImage = function(key, file) {
 AppStore.prototype.dataUpdateApplication = function(key, data) {
   const update = {
     name: data.name,
-    packageName: data.packageName,
+    appId: data.appId,
     description: HtmlSanitizer.sanitize(data.description),
     link_1: data.link_1
       ? {
@@ -1434,13 +1428,13 @@ AppStore.prototype.onUserLoggedIn = function(user) {
       user.isAllowed = false;
       /*user.delete().catch(error => {});*/
       this.auth.signOut();
-      this.uiTriggerAlert("alert-danger", `<b>${AppStore.CONSTANTS.shrug}</b><br>Anonymous users not allowed!`);
+      this.uiTriggerAlert("alert-danger", `<b>${AppStore.CONSTANTS.shrug}</b><br>로그인이 필요합니다.`);
       return Promise.reject(new Error("Anonymous user"));
     }
     if (!user.emailVerified && !AppStore.CONFIG.allowUnverifiedEmail) {
       this.uiTriggerAlert(
         "alert-warning",
-        `Email not verified yet.<br>Click on ${this.ui.userDetails.innerHTML} and <b>${this.ui.verifyEmail.textContent}</b>.`,
+        `이메일 인증이 완료되지 않았습니다.<br>${this.ui.userDetails.innerHTML}에서 <b>${this.ui.verifyEmail.textContent}</b>를 클릭하여 이메일 인증을 진행하십시오.`,
         Infinity
       );
       Ui.hide(this.ui.authContainer, this.ui.loader);
@@ -1471,7 +1465,7 @@ AppStore.prototype.onUserLoggedIn = function(user) {
         if (!user.emailVerified && AppStore.CONFIG.allowUnverifiedEmail) {
           this.uiTriggerAlert(
             "alert-warning",
-            `Email not verified yet.<br>Click on ${this.ui.userDetails.innerHTML} and <b>${this.ui.verifyEmail.textContent}</b>.`,
+            `이메일 인증이 완료되지 않았습니다.<br>${this.ui.userDetails.innerHTML}에서 <b>${this.ui.verifyEmail.textContent}</b>를 클릭하여 이메일 인증을 진행하십시오.`,
             Infinity
           );
           Ui.hide(this.ui.authContainer, this.ui.loader);
@@ -1480,7 +1474,7 @@ AppStore.prototype.onUserLoggedIn = function(user) {
 
         /*user.delete().catch(error => {});*/
         this.auth.signOut();
-        this.uiTriggerAlert("alert-danger", `<b>${AppStore.CONSTANTS.shrug}</b><br>You are not allowed here!`);
+        this.uiTriggerAlert("alert-danger", `<b>${AppStore.CONSTANTS.shrug}</b><br>권한이 없습니다.`);
         return Promise.reject(new Error("Not allowed"));
       });
   };
@@ -1555,12 +1549,12 @@ AppStore.prototype.sendEmailVerification = function() {
   if (user.emailVerified) {
     return;
   }
-  const success = () => this.uiTriggerAlert("alert-success", `Verification email sent to <b>${user.email}</b>.`);
+  const success = () => this.uiTriggerAlert("alert-success", `<b>${user.email}</b>으로 인증메일을 전송하였습니다.`);
   user.sendEmailVerification().then(success);
 };
 
 AppStore.prototype.sendPasswordResetEmail = function() {
-  const success = () => this.uiTriggerAlert("alert-success", "Password reset email sent.");
+  const success = () => this.uiTriggerAlert("alert-success", "암호 재설정 메일을 전송하였습니다.");
   this.auth.sendPasswordResetEmail(this.auth.currentUser.email).then(success);
 };
 

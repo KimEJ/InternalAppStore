@@ -1,0 +1,67 @@
+{
+  "conditions": [
+    {
+      "name": "-NSdf6HI_svIHc1yfNP-",
+      "expression": "app.id == '1:1082398656566:android:77f08cf400703556cfb097'",
+      "tagColor": "BROWN"
+    },
+    {
+      "name": "-NTq8Ju9xPql8KbiYTVF",
+      "expression": "app.id == '1:1082398656566:android:bf3c76ac5c615926cfb097'",
+      "tagColor": "BROWN"
+    }
+  ],
+  "parameters": {
+    "version": {
+      "defaultValue": {
+        "value": "0"
+      },
+      "conditionalValues": {
+        "-NSdf6HI_svIHc1yfNP-": {
+          "value": "1.06"
+        },
+        "-NTq8Ju9xPql8KbiYTVF": {
+          "value": "1.002"
+        }
+      },
+      "valueType": "STRING"
+    },
+    "applicationId": {
+      "defaultValue": {
+        "value": ""
+      },
+      "conditionalValues": {
+        "-NSdf6HI_svIHc1yfNP-": {
+          "value": "-NSdf6HI_svIHc1yfNP-"
+        },
+        "-NTq8Ju9xPql8KbiYTVF": {
+          "value": "-NTq8Ju9xPql8KbiYTVF"
+        }
+      },
+      "valueType": "STRING"
+    },
+    "versionId": {
+      "defaultValue": {
+        "value": ""
+      },
+      "conditionalValues": {
+        "-NSdf6HI_svIHc1yfNP-": {
+          "value": "-NTS56irS9FVXoiXMQlw"
+        },
+        "-NTq8Ju9xPql8KbiYTVF": {
+          "value": "-NU-WapcGYu9hucbS9Bg"
+        }
+      },
+      "valueType": "STRING"
+    }
+  },
+  "version": {
+    "versionNumber": "7",
+    "updateTime": "2023-04-27T01:05:13.819544Z",
+    "updateUser": {
+      "email": "kimuj5090@gmail.com"
+    },
+    "updateOrigin": "CONSOLE",
+    "updateType": "INCREMENTAL_UPDATE"
+  }
+}

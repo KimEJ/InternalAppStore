@@ -17,7 +17,7 @@
     "store": {
       ".write": "root.child('admins').hasChild(auth.uid)",
       // Grant read access (provider, uid, token.email, etc.) with enumeration, regex, etc.
-      ".read": "auth.token.email.endsWith('@domain.com') && auth.token.email_verified == true",
+      ".read": "!auth.token.email.endsWith('Anonymous') && auth.token.email_verified == true",
       "applications": {
         "$application_id": {
           // PUSH/UPDATE if has fields ['description', 'name', 'packageName']
